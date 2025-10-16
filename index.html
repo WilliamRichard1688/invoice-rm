@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <title>Room Invoice Generator - ផ្ទះជួល</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary: #004D7A;
+            --primary-light: #0077B6;
+            --secondary: #50C878;
+            --dark: #1A232F;
+            --light: #F0F4F7;
+            --background: #FFFFFF;
+            --border-color: #DDE1E6;
+            --text-muted: #5A6A78;
+            --shadow-light: rgba(0, 0, 0, 0.08);
+            --shadow-medium: rgba(0, 0, 0, 0.12);
+            --input-bg-focus: #F5F9FC;
+            --danger: #D9534F;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', 'Khmer OS Battambang', Arial, sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px var(--shadow-medium);
+        }
+
+        .header-section {
+            padding: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            text-align: center;
+            border-bottom: 5px solid var(--secondary);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle { font-size: 1rem; opacity: 0.95; font-weight: 400; }
+
+        .calculator { padding: 30px; }
+
+        .calculator > h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary-light);
+            padding-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .form-section-header {
+            grid-column: 1 / -1;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark);
+            background-color: transparent;
+            padding: 15px 0;
+            margin-top: 30px;
+            margin-bottom: 0;
+            border-bottom: 2px solid var(--border-color);
+        }
+        .form-section-header:first-of-type { margin-top: 0; }
+
+        .form-group { margin-bottom: 0; }
+        .form-group.full-width { grid-column: 1 / -1; }
+
+        label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper { position: relative; }
+
+        .input-wrapper input, .input-wrapper textarea {
+            width: 100%;
+            padding: 16px 18px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1.05rem;
+            transition: all 0.2s ease-in-out;
+            background: var(--background);
+            color: var(--dark);
+            font-family: 'Inter', 'Khmer OS Battambang', sans-serif;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .input-wrapper input:focus, .input-wrapper textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            /* MODIFIED: Changed background-color to keep it white on focus */
+            background-color: var(--background);
+            /* REMOVED GLOW EFFECT */
+            /* box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.2), 0 1px 5px rgba(0, 0, 0, 0.1); */
+        }
+
+        button {
+            padding: 16px 32px;
+            font-size: 17px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            user-select: none;
+            width: 100%;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px var(--shadow-medium);
+            border: none;
+        }
+
+        /* --- PRODUCT INVOICE STYLES (Desktop) --- */
+        #item-header-labels {
+            display: grid;
+            grid-template-columns: 5fr 1fr 2fr 0.5fr; 
+            gap: 15px;
+            padding: 0 10px;
+            margin-bottom: 5px;
+            grid-column: 1 / -1;
+        }
+        #item-header-labels > div { font-weight: 600; color: var(--text-muted); font-size: 0.9rem; }
+
+        .item-row {
+            display: grid;
+            grid-template-columns: 5fr 1fr 2fr 0.5fr;
+            gap: 15px;
+            align-items: start;
+            margin-bottom: 10px;
+            grid-column: 1 / -1;
+        }
+        .item-row input { padding: 12px 15px; font-size: 1rem; }
+
+        .remove-item-btn {
+            background-color: var(--danger);
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            height: 48px; 
+            line-height: 1;
+            font-size: 1.2rem;
+            margin: 0;
+            box-shadow: none;
+        }
+        .remove-item-btn:hover { background-color: #c9302c; }
+
+        .add-item-btn {
+            background: var(--secondary);
+            color: white;
+            margin-top: 15px;
+            grid-column: 1 / -1;
+        }
+        .add-item-btn:hover {
+            opacity: 0.9;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .print-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            margin-top: 25px;
+        }
+        .print-btn:hover {
+            background-color: var(--primary-light);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* INVOICE DESIGN STYLES */
+        .invoice-container { margin-top: 40px; padding: 30px; background: white; display: none; }
+        .invoice-box { border: 1px solid var(--border-color); padding: 30px; border-radius: 8px; background-color: #fcfdff; box-shadow: 0 4px 15px var(--shadow-light); }
+        .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary); padding-bottom: 20px; margin-bottom: 20px; }
+        .invoice-header .business-info h3 { margin: 0; font-size: 1.8rem; color: var(--primary); }
+        .invoice-header .business-info p { margin: 2px 0; color: var(--text-muted); }
+        .invoice-header .invoice-title h2 { margin: 0; font-size: 2.5rem; color: var(--text-muted); text-align: right; border-bottom: none; padding-bottom: 0; }
+        .invoice-details { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .invoice-details .bill-to p, .invoice-details .invoice-meta p { margin: 2px 0; }
+        .invoice-details .bill-to strong, .invoice-details .invoice-meta strong { color: var(--dark); }
+        .invoice-details .bill-to h4, .invoice-details .invoice-meta h4 { color: var(--primary); margin-bottom: 10px; }
+        .invoice-details .invoice-meta { text-align: right; }
+        .invoice-items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        .invoice-items-table thead { background-color: var(--primary); color: white; }
+        .invoice-items-table th, .invoice-items-table td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
+        .invoice-items-table th { text-align: left; font-weight: 600; }
+        .invoice-items-table td { color: var(--dark); }
+        .invoice-items-table .text-right { text-align: right; }
+        .invoice-totals { float: right; width: 45%; text-align: right; }
+        .invoice-totals .total-row { display: flex; justify-content: space-between; padding: 8px 0; }
+        .invoice-totals .total-row.grand-total { border-top: 2px solid var(--primary); margin-top: 10px; padding-top: 10px; font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+        .invoice-footer { margin-top: 80px; padding-top: 20px; border-top: 1px solid var(--border-color); clear: both; }
+        .invoice-footer .notes h5 { color: var(--primary); margin-bottom: 5px; }
+        .invoice-footer .thank-you { text-align: center; margin-top: 30px; font-size: 1.1rem; font-weight: 500; color: var(--text-muted); }
+
+        /* --- MOBILE OPTIMIZATIONS (for iPhone/small screens) --- */
+        @media (max-width: 768px) {
+            /* General Mobile Layout */
+            body { padding: 0; }
+            .container { margin: 0; border-radius: 0; box-shadow: none; }
+            .calculator { padding: 15px; } /* Slightly less padding */
+            .header-section { padding: 20px; }
+            h1 { font-size: 1.8rem; }
+            .subtitle { font-size: 0.9rem; }
+            .calculator > h2 { font-size: 1.5rem; margin-bottom: 20px; padding-bottom: 10px; }
+            .form-grid {
+                grid-template-columns: 1fr; /* Single column layout for all forms */
+                gap: 20px; 
+            }
+            .form-section-header { margin-top: 20px; padding-bottom: 10px; font-size: 1.1rem; }
+
+            /* Input & Button Adjustments */
+            .input-wrapper input, .input-wrapper textarea {
+                padding: 12px 15px; /* Smaller padding for inputs */
+                font-size: 1rem;
+            }
+            button {
+                padding: 12px 20px; /* Smaller button padding */
+                font-size: 1rem;
+            }
+
+            /* Billing Items Optimization for Mobile */
+            #item-header-labels { display: none; } /* Hide column headers */
+            .item-row {
+                grid-template-columns: 1fr; /* Single column for the item row inputs */
+                gap: 10px;
+                padding: 10px; 
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                background-color: var(--input-bg-focus); 
+                margin-bottom: 15px;
+            }
+
+            /* Add labels before inputs on mobile using data-label attributes set in JS */
+            .item-row .input-wrapper[data-label]:before {
+                content: attr(data-label); 
+                display: block;
+                font-weight: 600;
+                font-size: 0.85rem;
+                color: var(--primary);
+                margin-bottom: 5px;
+            }
+
+            /* Remove button on mobile */
+            .remove-item-btn {
+                height: auto;
+                padding: 10px;
+                margin-top: 0; 
+            }
+            .add-item-btn { margin-top: 5px; } 
+
+            /* Invoice Output Adjustments */
+            .invoice-box { padding: 15px; }
+            .invoice-header, .invoice-details { flex-direction: column; gap: 15px; }
+            .invoice-header .business-info h3 { font-size: 1.5rem; }
+            .invoice-header .invoice-title h2, .invoice-details .invoice-meta { text-align: left; font-size: 2rem; }
+            .invoice-totals { width: 100%; float: none; margin-top: 20px; }
+            .invoice-items-table th, .invoice-items-table td { padding: 8px 10px; font-size: 0.9rem; }
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 0; font-size: 10pt; }
+            .container, .invoice-box { box-shadow: none; border: none; border-radius: 0; margin: 0; padding: 0; }
+            .invoice-container { display: block !important; margin: 0; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header-section no-print">
+            <h1>Rental Invoice Generator</h1>
+            <div class="subtitle">Generate invoices for your tenants with ease.</div>
+        </header>
+
+        <div class="calculator no-print">
+            <h2>
+                Rental Invoice Details
+            </h2>
+
+            <div class="form-grid">
+                <h3 class="form-section-header">Business Information</h3>
+
+                <div class="form-group full-width">
+                    <label for="businessName">ឈ្មោះអាជីវកម្ម (Business Name)</label>
+                    <div class="input-wrapper">
+                         <input type="text" id="businessName" oninput="generateAd()" placeholder="Your Business Name" value="Sokha Rental Services">
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label for="businessAddress">អាសយដ្ឋាន (Address)</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="businessAddress" oninput="generateAd()" placeholder="Your Business Address" value="St. 123, Sangkat Toul Tom Poung, Khan Chamkarmon, Phnom Penh">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="businessPhone">លេខទូរស័ព្ទ (Business Phone)</label>
+                    <div class="input-wrapper">
+                        <input type="tel" id="businessPhone" oninput="generateAd()" placeholder="Your Business Phone Number" value="012 345 678 / 098 765 432">
+                    </div>
+                </div>
+                 <div class="form-group"></div>
+
+
+                <h3 class="form-section-header">Customer & Invoice Details</h3>
+
+                <div class="form-group">
+                    <label for="adCustomerName">ឈ្មោះអតិថិជន (Customer Name)</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="adCustomerName" oninput="generateAd()" placeholder="Customer's Full Name" value="Chan Dara">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="adCustomerPhone">លេខទូរស័ព្ទអតិថិជន (Customer Phone)</label>
+                    <div class="input-wrapper">
+                        <input type="tel" id="adCustomerPhone" oninput="generateAd()" placeholder="Customer's Phone Number" value="015 999 888">
+                    </div>
+                </div>
+                 <div class="form-group">
+                    <label for="adDate">កាលបរិច្ឆេទ (Date)</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="adDate" oninput="generateAd()" placeholder="e.g., Nov 1, 2025 or 01-11-2025" value="">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="adInvoiceNo">លេខវិក្កយបត្រ (Invoice No.)</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="adInvoiceNo" oninput="generateAd()" value="INV-2025-10-001">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="adRoomNo">លេខបន្ទប់ (Room No.)</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="adRoomNo" oninput="generateAd()" value="A-101">
+                    </div>
+                </div>
+                <div class="form-group"></div>
+
+
+                <h3 class="form-section-header">Billing Items</h3>
+
+                <div class="form-group">
+                    <label for="adRoomPrice">ថ្លៃបន្ទប់ (Room Price) (៛)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="adRoomPrice" oninput="generateAd()" value="600000">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="adElectricityRate">អត្រាអគ្គិសនី (Electricity Rate) (៛/kWh)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="adElectricityRate" oninput="generateAd()" value="1000">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="adElectricityUsage">ការប្រើប្រាស់អគ្គិសនី (Electricity Usage) (kWh)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="adElectricityUsage" oninput="generateAd()" value="55.5">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="adWaterRate">អត្រាទឹក (Water Rate) (៛/m³)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="adWaterRate" oninput="generateAd()" value="2000">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="adWaterUsage">ការប្រើប្រាស់ទឹក (Water Usage) (m³)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="adWaterUsage" oninput="generateAd()" value="5">
+                    </div>
+                </div>
+                 <div class="form-group"></div>
+
+                <div class="form-group full-width">
+                    <label for="adNotes">កំណត់សម្គាល់ (Notes)</label>
+                    <div class="input-wrapper">
+                        <textarea id="adNotes" rows="4" oninput="generateAd()">Payment is due by the 5th of November, 2025. Please pay via ABA or in cash at the front desk.</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="invoiceContainer" class="invoice-container">
+            <div id="invoiceContent"></div>
+            <button class="print-btn no-print" onclick="window.print()">បោះពុម្ពបង្កាន់ដៃ (Print Invoice)</button>
+        </div>
+    </div>
+
+    <script>
+        // Helper function to format numbers with commas
+        function formatNumber(num) {
+            if (isNaN(num)) return '0';
+            // Format to have 0 or 2 decimal places
+            const formatted = parseFloat(num).toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            });
+            return formatted;
+        }
+
+        // Generates and updates the invoice content based on form inputs
+        function generateAd() {
+            // Get values from business information fields
+            const businessName = document.getElementById('businessName').value || 'N/A';
+            const businessAddress = document.getElementById('businessAddress').value || 'N/A';
+            const businessPhone = document.getElementById('businessPhone').value || 'N/A';
+
+            // Get values from customer details fields
+            const customerName = document.getElementById('adCustomerName').value || 'N/A';
+            const customerPhone = document.getElementById('adCustomerPhone').value || 'N/A';
+
+            // Get values from invoice details fields
+            const date = document.getElementById('adDate').value || 'N/A';
+            const invoiceNo = document.getElementById('adInvoiceNo').value || 'N/A';
+            const roomNo = document.getElementById('adRoomNo').value || 'N/A';
+            const roomPrice = parseFloat(document.getElementById('adRoomPrice').value) || 0;
+            const electricityRate = parseFloat(document.getElementById('adElectricityRate').value) || 0;
+            const electricityUsage = parseFloat(document.getElementById('adElectricityUsage').value) || 0;
+            const waterRate = parseFloat(document.getElementById('adWaterRate').value) || 0;
+            const waterUsage = parseFloat(document.getElementById('adWaterUsage').value) || 0;
+            const notes = document.getElementById('adNotes').value || 'N/A';
+
+            // Calculate costs
+            const electricityCost = electricityRate * electricityUsage;
+            const waterCost = waterRate * waterUsage;
+            const subtotal = roomPrice + electricityCost + waterCost;
+            const totalCost = subtotal; // Assuming no tax for now
+
+            const invoiceHTML = `
+                <div class="invoice-box">
+                    <header class="invoice-header">
+                        <div class="business-info">
+                            <h3>${businessName}</h3>
+                            <p>${businessAddress}</p>
+                            <p>${businessPhone}</p>
+                        </div>
+                        <div class="invoice-title">
+                            <h2>INVOICE</h2>
+                        </div>
+                    </header>
+
+                    <section class="invoice-details">
+                        <div class="bill-to">
+                            <h4>BILL TO</h4>
+                            <p><strong>${customerName}</strong></p>
+                            <p>${customerPhone}</p>
+                            <p>Room: ${roomNo}</p>
+                        </div>
+                        <div class="invoice-meta">
+                            <h4>INVOICE DETAILS</h4>
+                            <p><strong>Invoice No:</strong> ${invoiceNo}</p>
+                            <p><strong>Date:</strong> ${date}</p>
+                        </div>
+                    </section>
+
+                    <table class="invoice-items-table">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th class="text-right">Rate / Usage</th>
+                                <th class="text-right">Amount (៛)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Room Rental Fee</td>
+                                <td class="text-right">-</td>
+                                <td class="text-right">${formatNumber(roomPrice)}</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Electricity Cost
+                                    <div class="sub-label" style="font-size: 0.8em; color: var(--text-muted);">${formatNumber(electricityUsage)} kWh @ ${formatNumber(electricityRate)} ៛/kWh</div>
+                                </td>
+                                <td class="text-right">${formatNumber(electricityRate)}</td>
+                                <td class="text-right">${formatNumber(electricityCost)}</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Water Cost
+                                    <div class="sub-label" style="font-size: 0.8em; color: var(--text-muted);">${formatNumber(waterUsage)} m³ @ ${formatNumber(waterRate)} ៛/m³</div>
+                                </td>
+                                <td class="text-right">${formatNumber(waterRate)}</td>
+                                <td class="text-right">${formatNumber(waterCost)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <section class="invoice-totals">
+                        <div class="total-row">
+                            <span>Subtotal</span>
+                            <span>${formatNumber(subtotal)} ៛</span>
+                        </div>
+                        <div class="total-row grand-total">
+                            <span>TOTAL DUE</span>
+                            <span>${formatNumber(totalCost)} ៛</span>
+                        </div>
+                    </section>
+
+                    <footer class="invoice-footer">
+                        <div class="notes">
+                            <h5>Notes</h5>
+                            <p>${notes}</p>
+                        </div>
+                        <div class="thank-you">
+                            <p>សូមអរគុណ! (Thank You!)</p>
+                        </div>
+                    </footer>
+                </div>
+            `;
+            document.getElementById('invoiceContent').innerHTML = invoiceHTML;
+            document.getElementById('invoiceContainer').style.display = 'block';
+        }
+
+        // Initial setup on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // ADDED: Set the current date in the date field
+            const today = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const formattedDate = today.toLocaleDateString('en-US', options); // e.g., "October 14, 2025"
+            document.getElementById('adDate').value = formattedDate;
+
+            // Generate the initial invoice with the current date
+            generateAd();
+        });
+    </script>
+</body>
+</html>
